@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { rspack } from "@rspack/core";
 import RefreshPlugin from "@rspack/plugin-react-refresh";
 import { withZephyr } from "zephyr-rspack-plugin";
+import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.NODE_ENV === "development";
@@ -62,6 +63,18 @@ export default withZephyr()({
     new rspack.ProgressPlugin({}),
     new rspack.HtmlRspackPlugin({
       template: "./index.html"
+    }),
+    new ModuleFederationPlugin({
+      name: "react_host",
+      exposes: {},
+      remotes: {
+        "react_remote": "react_remote@http://localhost:8080/remoteEntry.js"
+      },
+      shared: {
+        react: { eager: true },
+        'react-dom': { eager: true },
+        'react-router-dom': { eager: true },
+      },
     }),
     isDev ? new RefreshPlugin() : null
   ].filter(Boolean),
